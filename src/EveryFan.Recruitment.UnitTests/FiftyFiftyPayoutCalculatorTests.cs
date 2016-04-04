@@ -13,7 +13,6 @@ namespace EveryFan.Recruitment.UnitTests
             {
                 BuyIn = 250,
                 PrizePool = 500,
-                PayoutScheme = PayoutScheme.FIFTY_FIFY,
                 Entries = new List<TournamentEntry>()
                 {
                     new TournamentEntry()
@@ -29,8 +28,8 @@ namespace EveryFan.Recruitment.UnitTests
                 }
             };
 
-            PayoutEngine calculator = new PayoutEngine();
-            IReadOnlyList<TournamentPayout> payouts = calculator.Calculate(tournament);
+            PayoutEngine calculator = new PayoutEngine(Factory.Get(PayoutScheme.FIFTY_FIFY));
+            IReadOnlyList<TournamentPayout> payouts = calculator.Calculate(tournament );
 
             Assert.AreEqual(1, payouts.Count);
             Assert.AreEqual(500, payouts.Sum(p => p.Payout));
@@ -43,7 +42,6 @@ namespace EveryFan.Recruitment.UnitTests
             {
                 BuyIn = 250,
                 PrizePool = 750,
-                PayoutScheme = PayoutScheme.FIFTY_FIFY,
                 Entries = new List<TournamentEntry>()
                 {
                     new TournamentEntry()
@@ -64,7 +62,7 @@ namespace EveryFan.Recruitment.UnitTests
                 }
             };
 
-            PayoutEngine calculator = new PayoutEngine();
+            PayoutEngine calculator = new PayoutEngine(Factory.Get(PayoutScheme.FIFTY_FIFY));
             IReadOnlyList<TournamentPayout> payouts = calculator.Calculate(tournament);
 
             Assert.AreEqual(2, payouts.Count);
@@ -80,7 +78,6 @@ namespace EveryFan.Recruitment.UnitTests
             {
                 BuyIn = 250,
                 PrizePool = 750,
-                PayoutScheme = PayoutScheme.FIFTY_FIFY,
                 Entries = new List<TournamentEntry>()
                 {
                     new TournamentEntry()
@@ -101,7 +98,7 @@ namespace EveryFan.Recruitment.UnitTests
                 }
             };
 
-            PayoutEngine calculator = new PayoutEngine();
+            PayoutEngine calculator = new PayoutEngine(Factory.Get(PayoutScheme.FIFTY_FIFY));
             IReadOnlyList<TournamentPayout> payouts = calculator.Calculate(tournament);
 
             Assert.AreEqual(2, payouts.Count);
@@ -117,7 +114,6 @@ namespace EveryFan.Recruitment.UnitTests
             {
                 BuyIn = 333,
                 PrizePool = 999,
-                PayoutScheme = PayoutScheme.FIFTY_FIFY,
                 Entries = new List<TournamentEntry>()
                 {
                     new TournamentEntry()
@@ -138,11 +134,11 @@ namespace EveryFan.Recruitment.UnitTests
                 }
             };
 
-            PayoutEngine calculator = new PayoutEngine();
-            IReadOnlyList<TournamentPayout> payouts = calculator.Calculate(tournament);
+            PayoutEngine engine = new PayoutEngine(Factory.Get(PayoutScheme.FIFTY_FIFY));
+            IReadOnlyList<TournamentPayout> payouts = engine.Calculate(tournament);
 
             Assert.AreEqual(2, payouts.Count);
-            Assert.AreEqual(999, payouts.Sum(p => p.Payout));
+            Assert.That(payouts.Sum(p => p.Payout) == 999 || payouts.Sum(p => p.Payout) == 998);
             Assert.That(payouts[0].Payout == 500 || payouts[0].Payout == 499);
             Assert.That(payouts[1].Payout == 500 || payouts[1].Payout == 499);
         }

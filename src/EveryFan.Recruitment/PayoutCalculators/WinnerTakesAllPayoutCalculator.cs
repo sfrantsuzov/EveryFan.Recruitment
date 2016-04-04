@@ -8,26 +8,26 @@ namespace EveryFan.Recruitment.PayoutCalculators
     /// Winner takes all payout calculator, the winner recieves the entire prize pool. In the event of a tie for the winning position the
     /// prize pool is split equally between the tied players.
     /// </summary>
-    public class WinnerTakesAllPayoutCalculator : IPayoutCalculator
+    public class WinnerTakesAllPayoutCalculator : BasePayoutCalculator
     {
-        private IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
+        public override IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
         {
-            throw new NotImplementedException();
-        }
+            // Result list
+            List<PayingPosition> result = new List<PayingPosition>();
 
-        public IReadOnlyList<TournamentPayout> Calculate(Tournament tournament)
-        {
-            IReadOnlyList<PayingPosition> payingPositions = this.GetPayingPositions(tournament);
-            IReadOnlyList<TournamentEntry> orderedEntries = tournament.Entries.OrderByDescending(p => p.Chips).ToList();
+            // Query to select winners (users with maximum amoint of chips)
+            var query = tournament.Entries.Where(x => x.Chips == tournament.Entries.Max(a => a.Chips));
+                      
+            // Get the winners
+            List<TournamentEntry> winners = query.ToList<TournamentEntry>();
 
-            List<TournamentPayout> payouts = new List<TournamentPayout>();
-            payouts.AddRange(payingPositions.Select((p, i) => new TournamentPayout()
+            // Populate the intermediate list
+            foreach(var tour in winners)
             {
-                Payout = p.Payout,
-                UserId = orderedEntries[i].UserId
-            }));
+                result.Add(new PayingPosition() { Payout = (int) tournament.PrizePool / winners.Count(), Position = 1 });
+            }
 
-            return payouts;
+            return (IReadOnlyList <PayingPosition>)result;
         }
     }
 }

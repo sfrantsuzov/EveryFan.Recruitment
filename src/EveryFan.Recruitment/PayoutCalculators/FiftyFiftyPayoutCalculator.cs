@@ -10,26 +10,49 @@ namespace EveryFan.Recruitment.PayoutCalculators
     /// should get their stake back. Any tied positions should have the sum of the amount due to those positions
     /// split equally among them.
     /// </summary>
-    public class FiftyFiftyPayoutCalculator : IPayoutCalculator
+    public class FiftyFiftyPayoutCalculator : BasePayoutCalculator
     {
-        private IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
+            
+        public override IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
         {
-            throw new NotImplementedException();
-        }
+            // Result list
+            List<PayingPosition> result = new List<PayingPosition>();
 
-        public IReadOnlyList<TournamentPayout> Calculate(Tournament tournament)
-        {
-            IReadOnlyList<PayingPosition> payingPositions = this.GetPayingPositions(tournament);
-            IReadOnlyList<TournamentEntry> orderedEntries = tournament.Entries.OrderByDescending(p => p.Chips).ToList();
+            // Amount of player
+            var playerAmount = tournament.Entries.Select(x => x.UserId).Distinct().Count();
+                        
+            // Get the top half
+            List<TournamentEntry> topHalf = tournament.Entries.OrderByDescending(x => x.Chips)
+                // Take an extra player if there are an odd number of players
+                .Take((int) playerAmount / 2 + (playerAmount % 2 != 0 ? 1 : 0))
+                .ToList<TournamentEntry> ();
 
-            List<TournamentPayout> payouts = new List<TournamentPayout>();
-            payouts.AddRange(payingPositions.Select((p, i) => new TournamentPayout()
+
+            // Populate the intermediate list
+            for ( var i =0;  i < topHalf.Count(); i++)
             {
-                Payout = p.Payout,
-                UserId = orderedEntries[i].UserId
-            }));
+                var thied = tournament.Entries.Where(x => x.Chips == topHalf[i].Chips).Count();
 
-            return payouts;
+                if (thied > 1)
+                {
+                    result.Add(new PayingPosition() { Payout = (int)  tournament.PrizePool / thied, Position = i + 1 });
+                }
+                else
+                {
+
+                    // Is number of player odd?
+                    if (topHalf[i].Equals(topHalf.Last()) && playerAmount % 2 != 0)
+                    {
+                        result.Add(new PayingPosition() { Payout = (int)tournament.BuyIn, Position = i + 1 });
+                    }
+                    else
+                    {
+                        result.Add(new PayingPosition() { Payout = (int)tournament.BuyIn * 2, Position = i + 1 });
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

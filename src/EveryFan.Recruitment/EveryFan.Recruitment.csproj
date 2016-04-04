@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PayingPosition.cs" />
+    <Compile Include="PayoutCalculators\BasePayoutCalculator.cs" />
     <Compile Include="PayoutEngine.cs" />
     <Compile Include="PayoutCalculators\FiftyFiftyPayoutCalculator.cs" />
     <Compile Include="PayoutCalculators\IPayoutCalculator.cs" />
@@ -51,7 +52,9 @@
     <Compile Include="TournamentEntry.cs" />
     <Compile Include="TournamentPayout.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
