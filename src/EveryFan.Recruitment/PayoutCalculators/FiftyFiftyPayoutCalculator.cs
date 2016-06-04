@@ -12,47 +12,71 @@ namespace EveryFan.Recruitment.PayoutCalculators
     /// </summary>
     public class FiftyFiftyPayoutCalculator : BasePayoutCalculator
     {
-            
         public override IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
         {
-            // Result list
-            List<PayingPosition> result = new List<PayingPosition>();
+            var payingPositions = new List<PayingPosition>();
 
-            // Amount of player
-            var playerAmount = tournament.Entries.Select(x => x.UserId).Distinct().Count();
-                        
-            // Get the top half
-            List<TournamentEntry> topHalf = tournament.Entries.OrderByDescending(x => x.Chips)
-                // Take an extra player if there are an odd number of players
-                .Take((int) playerAmount / 2 + (playerAmount % 2 != 0 ? 1 : 0))
-                .ToList<TournamentEntry> ();
+            var positions = tournament.Entries
+                                    .GroupBy(w => w.Chips)
+                                    .Select(w => new { Chips = w.Key, Count = w.Count() })
+                                    .OrderByDescending(x => x.Chips);
 
+            var positionCount = positions.Count();
 
-            // Populate the intermediate list
-            for ( var i =0;  i < topHalf.Count(); i++)
+            var isOddPositionCount = positionCount == 1 || positionCount % 2 != 0;
+
+            var topPositionsCount = positionCount / 2;
+            var middlePositionCount = (isOddPositionCount) ? 1 : 0;
+
+            var winningPositionsCount = topPositionsCount + middlePositionCount;
+
+            var winningPositions = positions.Take(winningPositionsCount).ToList();
+
+            var prizePool = tournament.PrizePool;
+
+            var stakes = prizePool / (2 * topPositionsCount + middlePositionCount);
+            var stakesReminder = prizePool % (2 * topPositionsCount + middlePositionCount);
+
+            for (var i = 0; i < winningPositions.Count; i++)
             {
-                var thied = tournament.Entries.Where(x => x.Chips == topHalf[i].Chips).Count();
+                var positionIndex = i + 1;
+                var payOutAmmount = stakes * 2;
 
-                if (thied > 1)
+                var isLastPosition = positionIndex == winningPositionsCount;
+                var isSingleStake = isOddPositionCount && isLastPosition ;
+
+                if (isSingleStake)
                 {
-                    result.Add(new PayingPosition() { Payout = (int)  tournament.PrizePool / thied, Position = i + 1 });
+                    payOutAmmount = stakes;
                 }
-                else
-                {
 
-                    // Is number of player odd?
-                    if (topHalf[i].Equals(topHalf.Last()) && playerAmount % 2 != 0)
+                var winner = winningPositions[i];
+
+                for (var j = 0; j < winner.Count; j++)
+                {
+                    var payoutPosition = new PayingPosition()
                     {
-                        result.Add(new PayingPosition() { Payout = (int)tournament.BuyIn, Position = i + 1 });
-                    }
-                    else
-                    {
-                        result.Add(new PayingPosition() { Payout = (int)tournament.BuyIn * 2, Position = i + 1 });
-                    }
+                        Position = positionIndex,
+                        Payout = payOutAmmount / winner.Count
+                    };
+
+                    payingPositions.Add(payoutPosition);
+                    positionIndex++;
                 }
             }
 
-            return result;
+            var existsReminder = stakesReminder != 0;
+
+            if (existsReminder)
+            {
+                var randomNumber = new Random((int)DateTime.Now.Ticks);
+                var positionsCount = payingPositions.Count();
+                var randomIndex = randomNumber.Next(0, positionsCount - 1);
+
+                payingPositions[randomIndex].Payout += stakesReminder;
+            }
+
+            return payingPositions;
         }
     }
 }

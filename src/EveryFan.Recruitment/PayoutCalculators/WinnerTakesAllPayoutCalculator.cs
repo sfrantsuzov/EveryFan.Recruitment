@@ -12,22 +12,40 @@ namespace EveryFan.Recruitment.PayoutCalculators
     {
         public override IReadOnlyList<PayingPosition> GetPayingPositions(Tournament tournament)
         {
-            // Result list
-            List<PayingPosition> result = new List<PayingPosition>();
+            var payingPositions = new List<PayingPosition>();
 
-            // Query to select winners (users with maximum amoint of chips)
-            var query = tournament.Entries.Where(x => x.Chips == tournament.Entries.Max(a => a.Chips));
-                      
-            // Get the winners
-            List<TournamentEntry> winners = query.ToList<TournamentEntry>();
+            var winningChipsAmmount = tournament.Entries.Max(a => a.Chips);
 
-            // Populate the intermediate list
-            foreach(var tour in winners)
+            var winners = tournament.Entries
+                                    .Where(x => x.Chips == winningChipsAmmount)
+                                    .ToList();
+
+            var winnersCount = winners.Count();
+            var prizePool = tournament.PrizePool;
+            var payout = prizePool / winnersCount;
+            var payoutReminder = prizePool % winnersCount;
+
+            for (var i = 0; i < winnersCount; i++)
             {
-                result.Add(new PayingPosition() { Payout = (int) tournament.PrizePool / winners.Count(), Position = 1 });
+                var payoutPosition = new PayingPosition()
+                {
+                    Payout = payout,
+                    Position = 1
+                };
+
+                payingPositions.Add(payoutPosition);
             }
 
-            return (IReadOnlyList <PayingPosition>)result;
+            if (payoutReminder != 0)
+            {
+                var randomNumber = new Random((int)DateTime.Now.Ticks);
+                var positionsCount = payingPositions.Count();
+                var randomIndex = randomNumber.Next(0, positionsCount - 1);
+
+                payingPositions[randomIndex].Payout += payoutReminder;
+            }
+
+            return payingPositions;
         }
     }
 }

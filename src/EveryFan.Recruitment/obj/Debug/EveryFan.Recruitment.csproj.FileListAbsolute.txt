@@ -1,0 +1,5 @@
+C:\P\EveryFan\EveryFan.Recruitment-master\EveryFan.Recruitment-master\src\EveryFan.Recruitment\bin\Debug\EveryFan.Recruitment.dll
+C:\P\EveryFan\EveryFan.Recruitment-master\EveryFan.Recruitment-master\src\EveryFan.Recruitment\bin\Debug\EveryFan.Recruitment.pdb
+C:\P\EveryFan\EveryFan.Recruitment-master\EveryFan.Recruitment-master\src\EveryFan.Recruitment\obj\Debug\EveryFan.Recruitment.csprojResolveAssemblyReference.cache
+C:\P\EveryFan\EveryFan.Recruitment-master\EveryFan.Recruitment-master\src\EveryFan.Recruitment\obj\Debug\EveryFan.Recruitment.dll
+C:\P\EveryFan\EveryFan.Recruitment-master\EveryFan.Recruitment-master\src\EveryFan.Recruitment\obj\Debug\EveryFan.Recruitment.pdb
